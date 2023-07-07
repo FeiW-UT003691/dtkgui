@@ -14,6 +14,8 @@
 #endif
 
 #include <DStandardPaths>
+#include <DPlatformTheme>
+#include <DGuiApplicationHelper>
 
 #include <QCache>
 #include <QSet>
@@ -107,7 +109,12 @@ static inline QIconEngine *createXdgProxyIconEngine(const QString &iconName)
 QIconEngine *DIconTheme::createIconEngine(const QString &iconName, Options options)
 {
     thread_local static QSet<QString> non_cache;
-
+    QString currentTheme = DGuiApplicationHelper::instance()->applicationTheme()->iconThemeName();
+    thread_local static QString theme = currentTheme;
+    if (theme != currentTheme) {
+        non_cache.clear();
+        theme = currentTheme;
+    }
     if (!non_cache.contains(iconName)) {
         if (Q_UNLIKELY(!options.testFlag(IgnoreBuiltinIcons))) {
             QScopedPointer<QIconEngine> engine(createBuiltinIconEngine(iconName));
